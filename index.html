@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,54 +8,60 @@
 </head>
 <body>
     <div class="container">
-        <h1>Monthly Budget Tracker</h1>
-      <p> Save maayos, Dear. Love you.</p>
-        <div class="input-section">
-            <label for="budget">Enter your monthly budget:</label>
-            <input type="number" id="budget" placeholder="Enter Budget" required>
-            <button id="setBudgetBtn">Set Budget</button>
+        <div class="left-section">
+            <div class="budget-details">
+                <h2>Current Budget Details</h2>
+                <p>Total Budget: <span id="totalBudget">0</span> PHP</p>
+                <p>Total Expenses: <span id="totalExpenses">0</span> PHP</p>
+                <p>Remaining Budget: <span id="remainingBudget">0</span> PHP</p>
+            </div>
         </div>
+        <div class="center-section">
+            <h1>Monthly Budget Tracker</h1>
+            <div class="input-section">
+                <label for="budget">Enter your monthly budget:</label>
+                <input type="number" id="budget" placeholder="Enter Budget" aria-required="true">
+                <button id="setBudgetBtn">Set Budget</button>
+            </div>
 
-        <div class="expense-section">
-            <h2>Log an Expense</h2>
-            <label for="expenseName">Purpose:</label>
-            <input type="text" id="expenseName" placeholder="Expense Purpose" required>
-            
-            <label for="expenseAmount">Amount (PHP):</label>
-            <input type="number" id="expenseAmount" placeholder="Expense Amount" required>
+            <div class="expense-section">
+                <h2>Log an Expense</h2>
+                <label for="expenseName">Purpose:</label>
+                <input type="text" id="expenseName" placeholder="Expense Purpose" aria-required="true">
 
-            <label for="expenseDate">Date & Time:</label>
-            <input type="datetime-local" id="expenseDate">
+                <label for="expenseAmount">Amount (PHP):</label>
+                <input type="number" id="expenseAmount" placeholder="Expense Amount" aria-required="true">
 
-            <button id="logExpenseBtn">Log Expense</button>
-            <button id="undoBtn">Undo</button>
-            <button id="redoBtn">Redo</button>
+                <label for="expenseDate">Date & Time:</label>
+                <input type="datetime-local" id="expenseDate">
+
+                <button id="logExpenseBtn">Log Expense</button>
+                <div class="button-group">
+                    <button id="undoBtn">Undo</button>
+                    <button id="redoBtn">Redo</button>
+                </div>
+                <button id="resetBtn">Reset</button>
+            </div>
         </div>
-
-        <div class="budget-details">
-            <h2>Current Budget Details</h2>
-            <p>Total Budget: <span id="totalBudget">0</span> PHP</p>
-            <p>Total Expenses: <span id="totalExpenses">0</span> PHP</p>
-            <p>Remaining Budget: <span id="remainingBudget">0</span> PHP</p>
-        </div>
-
-        <div class="expense-log">
-            <h2>Expense Log</h2>
-            <table id="expenseTable">
-                <thead>
-                    <tr>
-                        <th>Purpose</th>
-                        <th>Amount (PHP)</th>
-                        <th>Date (DD/MM/YYYY)</th>
-                        <th>Time (HH:MM:SS)</th>
-                    </tr>
-                </thead>
-                <tbody id="expenseTableBody"></tbody>
-            </table>
+        <div class="right-section">
+            <div class="expense-log">
+                <h2>Expense Log</h2>
+                <table id="expenseTable">
+                    <thead>
+                        <tr>
+                            <th>Purpose</th>
+                            <th>Amount (PHP)</th>
+                            <th>Date (DD/MM/YYYY)</th>
+                            <th>Time (HH:MM:SS)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expenseTableBody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
-    <div id="notification" class="notification"></div>
-    <div id="errorNotification" class="error-notification"></div>
+    <div id="notification" class="notification" role="alert"></div>
+    <div id="errorNotification" class="error-notification" role="alert"></div>
     <div id="dateTimeDisplay" class="date-time-display"></div>
     <script src="script.js"></script>
 </body>

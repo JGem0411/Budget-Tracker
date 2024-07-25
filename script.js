@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const logExpenseBtn = document.getElementById('logExpenseBtn');
     const undoBtn = document.getElementById('undoBtn');
     const redoBtn = document.getElementById('redoBtn');
+    const resetBtn = document.getElementById('resetBtn');
     const totalBudgetDisplay = document.getElementById('totalBudget');
     const totalExpensesDisplay = document.getElementById('totalExpenses');
     const remainingBudgetDisplay = document.getElementById('remainingBudget');
@@ -66,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         notification.classList.add('show-notification');
         setTimeout(() => {
             notification.classList.remove('show-notification');
-        }, 2000); // Notification visible for 2 seconds
+        }, 3000); // Notification visible for 10 seconds
     }
 
     function showErrorNotification(message) {
@@ -74,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         errorNotification.classList.add('show-error-notification');
         setTimeout(() => {
             errorNotification.classList.remove('show-error-notification');
-        }, 2000); // Error notification visible for 2 seconds
+        }, 3000); // Error notification visible for 10 seconds
     }
 
     function updateDateTime() {
@@ -86,25 +87,33 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateDateTime, 1000); // Update every second
 
     function saveData() {
-        localStorage.setItem('totalBudget', totalBudget);
-        localStorage.setItem('totalExpenses', totalExpenses);
-        localStorage.setItem('expenseLog', JSON.stringify(expenseLog));
-        localStorage.setItem('undoStack', JSON.stringify(undoStack));
+        try {
+            localStorage.setItem('totalBudget', totalBudget);
+            localStorage.setItem('totalExpenses', totalExpenses);
+            localStorage.setItem('expenseLog', JSON.stringify(expenseLog));
+            localStorage.setItem('undoStack', JSON.stringify(undoStack));
+        } catch (e) {
+            showErrorNotification('Failed to save data.');
+        }
     }
 
     function loadData() {
-        const savedBudget = parseFloat(localStorage.getItem('totalBudget'));
-        const savedExpenses = parseFloat(localStorage.getItem('totalExpenses'));
-        const savedLog = JSON.parse(localStorage.getItem('expenseLog')) || [];
-        const savedUndoStack = JSON.parse(localStorage.getItem('undoStack')) || [];
+        try {
+            const savedBudget = parseFloat(localStorage.getItem('totalBudget'));
+            const savedExpenses = parseFloat(localStorage.getItem('totalExpenses'));
+            const savedLog = JSON.parse(localStorage.getItem('expenseLog')) || [];
+            const savedUndoStack = JSON.parse(localStorage.getItem('undoStack')) || [];
 
-        if (!isNaN(savedBudget)) totalBudget = savedBudget;
-        if (!isNaN(savedExpenses)) totalExpenses = savedExpenses;
-        expenseLog.push(...savedLog);
-        undoStack.push(...savedUndoStack);
+            if (!isNaN(savedBudget)) totalBudget = savedBudget;
+            if (!isNaN(savedExpenses)) totalExpenses = savedExpenses;
+            expenseLog.push(...savedLog);
+            undoStack.push(...savedUndoStack);
 
-        updateDisplay();
-        updateExpenseTable();
+            updateDisplay();
+            updateExpenseTable();
+        } catch (e) {
+            showErrorNotification('Failed to load data.');
+        }
     }
 
     setBudgetBtn.addEventListener('click', () => {
@@ -147,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const projectedTotalExpenses = totalExpenses + expenseAmount;
         if (projectedTotalExpenses > totalBudget) {
-            const confirmed = confirm('Adding this expense will exceed your budget. Do you want to proceed?');
+            const confirmed = confirm('Adding this expense will exceed your budget and put you in debt. Do you want to proceed?');
             if (!confirmed) {
                 return;
             }
@@ -203,19 +212,13 @@ document.addEventListener('DOMContentLoaded', () => {
         saveData(); // Save the reset state
     }
 
-    function checkEndOfMonth() {
-        const now = new Date();
-        const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-        const timeUntilNextMonth = nextMonth - now;
-
-        setTimeout(() => {
+    resetBtn.addEventListener('click', () => {
+        if (confirm("Are you sure you want to reset? This action cannot be undone.")) {
             resetData();
-            checkEndOfMonth(); // Reset the check for the next month
-        }, timeUntilNextMonth);
-    }
+        }
+    });
 
     loadData(); // Load saved data when the page loads
-    checkEndOfMonth();
 
     // Handle floating date-time display movement
     let lastScrollTop = 0;
