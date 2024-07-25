@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let totalBudget = 0;
     let totalExpenses = 0;
     const expenseLog = [];
+    const undoStack = []; // Stack to hold undone expenses
 
     const budgetInput = document.getElementById('budget');
     const setBudgetBtn = document.getElementById('setBudgetBtn');
@@ -10,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const expenseDateInput = document.getElementById('expenseDate');
     const logExpenseBtn = document.getElementById('logExpenseBtn');
     const undoBtn = document.getElementById('undoBtn');
+    const redoBtn = document.getElementById('redoBtn');
     const totalBudgetDisplay = document.getElementById('totalBudget');
     const totalExpensesDisplay = document.getElementById('totalExpenses');
     const remainingBudgetDisplay = document.getElementById('remainingBudget');
@@ -22,6 +24,15 @@ document.addEventListener('DOMContentLoaded', () => {
         totalBudgetDisplay.textContent = totalBudget.toFixed(2);
         totalExpensesDisplay.textContent = totalExpenses.toFixed(2);
         remainingBudgetDisplay.textContent = (totalBudget - totalExpenses).toFixed(2);
+    }
+
+    function formatDateTime(dateTimeString) {
+        const dateObj = new Date(dateTimeString);
+        const optionsDate = { day: '2-digit', month: '2-digit', year: 'numeric' };
+        const optionsTime = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+        const formattedDate = dateObj.toLocaleDateString('en-GB', optionsDate);
+        const formattedTime = dateObj.toLocaleTimeString('en-GB', optionsTime);
+        return { date: formattedDate, time: formattedTime };
     }
 
     function updateExpenseTable() {
@@ -37,12 +48,13 @@ document.addEventListener('DOMContentLoaded', () => {
             amountCell.textContent = expense.amount.toFixed(2);
             row.appendChild(amountCell);
 
+            const { date, time } = formatDateTime(expense.date);
             const dateCell = document.createElement('td');
-            dateCell.textContent = expense.date.split('T')[0].split('-').reverse().join('/');
+            dateCell.textContent = date;
             row.appendChild(dateCell);
 
             const timeCell = document.createElement('td');
-            timeCell.textContent = expense.date.split('T')[1];
+            timeCell.textContent = time;
             row.appendChild(timeCell);
 
             expenseTableBody.appendChild(row);
@@ -67,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateDateTime() {
         const now = new Date();
-        const dateTimeString = now.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'medium' });
+        const dateTimeString = now.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'medium', hour12: true });
         dateTimeDisplay.textContent = dateTimeString;
     }
 
@@ -107,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!expenseDate) {
             const now = new Date();
-            expenseDate = now.toISOString().slice(0, 16);
+            expenseDate = now.toISOString();
         }
 
         const projectedTotalExpenses = totalExpenses + expenseAmount;
@@ -118,8 +130,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        expenseLog.push({ name: expenseName, amount: expenseAmount, date: expenseDate });
+        const newExpense = { name: expenseName, amount: expenseAmount, date: expenseDate };
+        expenseLog.push(newExpense);
         totalExpenses += expenseAmount;
+        undoStack.length = 0; // Clear redo stack
         expenseNameInput.value = '';
         expenseAmountInput.value = '';
         expenseDateInput.value = '';
@@ -132,11 +146,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const lastExpense = expenseLog.pop();
         if (lastExpense) {
             totalExpenses -= lastExpense.amount;
+            undoStack.push(lastExpense);
             updateDisplay();
             updateExpenseTable();
             showNotification('Undo successful!');
         } else {
             showErrorNotification('No expense to undo.');
+        }
+    });
+
+    redoBtn.addEventListener('click', () => {
+        const lastUndoneExpense = undoStack.pop();
+        if (lastUndoneExpense) {
+            expenseLog.push(lastUndoneExpense);
+            totalExpenses += lastUndoneExpense.amount;
+            updateDisplay();
+            updateExpenseTable();
+            showNotification('Redo successful!');
+        } else {
+            showErrorNotification('No expense to redo.');
         }
     });
 
