@@ -1,0 +1,178 @@
+/* General styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1, h2, p {
+    text-align: center;
+}
+
+.input-section, .expense-section, .budget-details, .expense-log {
+    margin: 20px 0;
+    padding: 2px 10px 10px 15px;
+}
+
+input, button {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    box-sizing: border-box;
+}
+
+.budget-details {
+  background-color: #BBD1EA;
+  border: 5px;
+  border-radius: 25px;
+  border-inline-style: solid;
+  border-inline-color: #7C99B6;
+  font-weight: 500;
+}
+
+
+
+label {
+    display: block;
+    margin: 10px 0 5px;
+}
+
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Notification styles */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px;
+    background-color: #28a745; /* Green background for success */
+    color: white;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    display: none; /* Hidden by default */
+    font-size: 16px;
+    z-index: 1000;
+}
+
+/* Error Notification styles */
+.error-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px;
+    background-color: #dc3545; /* Red background for error */
+    color: white;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    display: none; /* Hidden by default */
+    font-size: 16px;
+    z-index: 1000;
+}
+
+/* Animation for notifications */
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+.show-notification, .show-error-notification {
+    display: block;
+    animation: bounce 0.6s ease;
+}
+
+/* Table styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+thead {
+    background-color: #f4f4f4;
+}
+
+/* Date-time display styles */
+.date-time-display {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    padding: 10px;
+    background-color: #A1C6EA; /* Dark background */
+    color: black;
+    font-weight: 600;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+    transition: transform 0.3s ease; /* Smooth movement */
+    pointer-events: none; /* Ignore pointer events */
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    .input-section, .expense-section, .budget-details, .expense-log {
+        padding: 5px;
+    }
+
+    input, button {
+        padding: 8px;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+    .notification, .error-notification {
+        font-size: 12px;
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        margin: 10px;
+    }
+
+    input, button {
+        padding: 6px;
+    }
+
+    table {
+        font-size: 12px;
+    }
+}
