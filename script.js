@@ -85,6 +85,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setInterval(updateDateTime, 1000); // Update every second
 
+    function saveData() {
+        localStorage.setItem('totalBudget', totalBudget);
+        localStorage.setItem('totalExpenses', totalExpenses);
+        localStorage.setItem('expenseLog', JSON.stringify(expenseLog));
+        localStorage.setItem('undoStack', JSON.stringify(undoStack));
+    }
+
+    function loadData() {
+        const savedBudget = parseFloat(localStorage.getItem('totalBudget'));
+        const savedExpenses = parseFloat(localStorage.getItem('totalExpenses'));
+        const savedLog = JSON.parse(localStorage.getItem('expenseLog')) || [];
+        const savedUndoStack = JSON.parse(localStorage.getItem('undoStack')) || [];
+
+        if (!isNaN(savedBudget)) totalBudget = savedBudget;
+        if (!isNaN(savedExpenses)) totalExpenses = savedExpenses;
+        expenseLog.push(...savedLog);
+        undoStack.push(...savedUndoStack);
+
+        updateDisplay();
+        updateExpenseTable();
+    }
+
     setBudgetBtn.addEventListener('click', () => {
         const budgetValue = parseFloat(budgetInput.value);
         if (isNaN(budgetValue) || budgetValue <= 0) {
@@ -95,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         budgetInput.value = '';
         updateDisplay();
         showNotification('Budget set successfully!');
+        saveData(); // Save data to localStorage
     });
 
     logExpenseBtn.addEventListener('click', () => {
@@ -140,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateDisplay();
         updateExpenseTable();
         showNotification('Expense logged successfully!');
+        saveData(); // Save data to localStorage
     });
 
     undoBtn.addEventListener('click', () => {
@@ -150,6 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateDisplay();
             updateExpenseTable();
             showNotification('Undo successful!');
+            saveData(); // Save data to localStorage
         } else {
             showErrorNotification('No expense to undo.');
         }
@@ -163,6 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateDisplay();
             updateExpenseTable();
             showNotification('Redo successful!');
+            saveData(); // Save data to localStorage
         } else {
             showErrorNotification('No expense to redo.');
         }
@@ -174,6 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
         expenseLog.length = 0;
         updateDisplay();
         updateExpenseTable();
+        saveData(); // Save the reset state
     }
 
     function checkEndOfMonth() {
@@ -187,6 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, timeUntilNextMonth);
     }
 
+    loadData(); // Load saved data when the page loads
     checkEndOfMonth();
 
     // Handle floating date-time display movement
