@@ -113,10 +113,10 @@ document.addEventListener('DOMContentLoaded', () => {
             showErrorNotification('Please enter a valid budget.');
             return;
         }
-        totalBudget = budgetValue;
+        totalBudget += budgetValue; // Add to the current budget
         budgetInput.value = '';
         updateDisplay();
-        showNotification('Budget set successfully!');
+        showNotification('Budget updated successfully!');
         saveData(); // Save data to localStorage
     });
 
