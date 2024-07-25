@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const notification = document.getElementById('notification');
     const errorNotification = document.getElementById('errorNotification');
     const dateTimeDisplay = document.getElementById('dateTimeDisplay');
+    
 
     function updateDisplay() {
         totalBudgetDisplay.textContent = totalBudget.toFixed(2);
