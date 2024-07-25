@@ -142,8 +142,7 @@ thead {
 /* Media query for mobile */
 @media (max-width: 768px) {
     .date-time-display {
-        left: 10px;
-        bottom: 10px;
+        display: none;
     }
 }
 
