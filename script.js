@@ -26,6 +26,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const sunIcon = document.querySelector('.sun-icon');
     const moonIcon = document.querySelector('.moon-icon');
 
+    function saveData() {
+        try {
+            localStorage.setItem('totalBudget', totalBudget.toFixed(2));
+            localStorage.setItem('totalExpenses', totalExpenses.toFixed(2));
+            localStorage.setItem('expenseLog', JSON.stringify(expenseLog));
+            localStorage.setItem('undoStack', JSON.stringify(undoStack));
+            console.log('Data saved:', {
+                totalBudget,
+                totalExpenses,
+                expenseLog,
+                undoStack
+            });
+        } catch (e) {
+            showErrorNotification('Failed to save data.');
+        }
+    }    
+    
+    function loadData() {
+        try {
+            const savedBudget = parseFloat(localStorage.getItem('totalBudget'));
+            const savedExpenses = parseFloat(localStorage.getItem('totalExpenses'));
+            const savedLog = JSON.parse(localStorage.getItem('expenseLog')) || [];
+            const savedUndoStack = JSON.parse(localStorage.getItem('undoStack')) || [];
+    
+            if (!isNaN(savedBudget)) totalBudget = savedBudget;
+            if (!isNaN(savedExpenses)) totalExpenses = savedExpenses;
+            expenseLog.length = 0; // Clear the current log
+            expenseLog.push(...savedLog);
+            undoStack.length = 0; // Clear the current stack
+            undoStack.push(...savedUndoStack);
+    
+            updateDisplay();
+            updateExpenseTable();
+        } catch (e) {
+            showErrorNotification('Failed to load data.');
+        }
+    }
+
     // Check if dark mode is already applied
     if (localStorage.getItem('darkMode') === 'enabled') {
         body.classList.add('dark-mode');
@@ -169,8 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }}
         ];
         
+        const dateTimeStr = `${dateStr} ${timeStr}`;
         for (const { parse } of formats) {
-            const dateTimeStr = `${dateStr} ${timeStr}`;
             try {
                 const date = parse(dateTimeStr);
                 if (!isNaN(date.getTime())) {
@@ -182,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return null; // No valid format found
     }
+    
 
     function updateDisplay() {
         totalBudgetDisplay.textContent = totalBudget.toFixed(2);
@@ -247,36 +286,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     setInterval(updateDateTime, 1000); // Update every second
-
-    function saveData() {
-        try {
-            localStorage.setItem('totalBudget', totalBudget);
-            localStorage.setItem('totalExpenses', totalExpenses);
-            localStorage.setItem('expenseLog', JSON.stringify(expenseLog));
-            localStorage.setItem('undoStack', JSON.stringify(undoStack));
-        } catch (e) {
-            showErrorNotification('Failed to save data.');
-        }
-    }
-
-    function loadData() {
-        try {
-            const savedBudget = parseFloat(localStorage.getItem('totalBudget'));
-            const savedExpenses = parseFloat(localStorage.getItem('totalExpenses'));
-            const savedLog = JSON.parse(localStorage.getItem('expenseLog')) || [];
-            const savedUndoStack = JSON.parse(localStorage.getItem('undoStack')) || [];
-
-            if (!isNaN(savedBudget)) totalBudget = savedBudget;
-            if (!isNaN(savedExpenses)) totalExpenses = savedExpenses;
-            expenseLog.push(...savedLog);
-            undoStack.push(...savedUndoStack);
-
-            updateDisplay();
-            updateExpenseTable();
-        } catch (e) {
-            showErrorNotification('Failed to load data.');
-        }
-    }
 
     setBudgetBtn.addEventListener('click', () => {
         const budgetValue = parseFloat(budgetInput.value);
@@ -393,9 +402,12 @@ document.addEventListener('DOMContentLoaded', () => {
         dateTimeDisplay.style.transform = `translateY(${Math.min(Math.max(delta, -250), 250)}px)`;
         lastScrollTop = scrollTop;
     });
+    
     console.log('Total Budget:', totalBudget);
     console.log('Total Expenses:', totalExpenses);
     console.log('Expense Log:', expenseLog);
+
+    loadData()
 });
 
 
