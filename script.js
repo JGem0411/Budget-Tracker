@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    loadData(); // Load saved data when the page loads
     let totalBudget = 0;
     let totalExpenses = 0;
     const expenseLog = [];
@@ -131,6 +132,8 @@ document.addEventListener('DOMContentLoaded', () => {
     confirmImportButton.addEventListener('click', () => {
         importConfirmationModal.style.display = 'none'; // Hide modal
         document.getElementById('importFile').click(); // Trigger file input
+        // Save the imported data
+        saveData();
     });
 
     document.getElementById('importFile').addEventListener('change', (event) => {
@@ -406,8 +409,6 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Total Budget:', totalBudget);
     console.log('Total Expenses:', totalExpenses);
     console.log('Expense Log:', expenseLog);
-
-    loadData()
 });
 
 
