@@ -5,19 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
     <title>Budget Tracker</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     
     <div class="container">
         <div class="left-section">
-            <div class="budget-details">
-                <h2>Current Budget Details</h2>
-                <p>Total Budget: <span id="totalBudget">0</span> PHP</p>
-                <p>Total Expenses: <span id="totalExpenses">0</span> PHP</p>
-                <p>Remaining Budget: <span id="remainingBudget">0</span> PHP</p>
+            <div class="budget-container">
+                <div class="budget-details">
+                    <h2>Current Budget Details</h2>
+                    <p>Total Budget: <span id="totalBudget">0</span> PHP</p>
+                    <p>Total Expenses: <span id="totalExpenses">0</span> PHP</p>
+                    <p>Remaining Budget: <span id="remainingBudget">0</span> PHP</p>
+             </div>
+             </div>
+            <div>
+                <div class="import-export-buttons">
+                    <button id="exportBtn">Export Data to Excel</button>
+                    <input type="file" id="importFile" style="display: none;">
+                    <button id="importBtn">Import Data from Excel</button>
+                </div>
+                <div id="importConfirmationModal" class="modal">
+                    <div class="modal-content">
+                        <p>Only files exported from this website will be accepted.</p>
+                        <button id="confirmImport">Confirm</button>
+                    </div>
+                </div>
             </div>
         </div>
+
         <div class="center-section">
+
             <h1>Monthly Budget Tracker</h1>
             <div class="input-section">
                 <label for="budget">Enter your monthly budget:</label>
@@ -42,28 +60,43 @@
                     <button id="redoBtn">Redo</button>
                 </div>
                 <button id="resetBtn">Reset</button>
+
             </div>
         </div>
         <div class="right-section">
-            <div class="expense-log">
-                <h2>Expense Log</h2>
-                <table id="expenseTable">
-                    <thead>
-                        <tr>
-                            <th>Purpose</th>
-                            <th>Amount (PHP)</th>
-                            <th>Date (DD/MM/YYYY)</th>
-                            <th>Time (HH:MM:SS)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="expenseTableBody"></tbody>
-                </table>
+            <div class="expense-log-grid">
+                <div class="expense-log-container">
+                    <table class="expense-log-table">
+                        <thead>
+                            <tr>
+                                <th>Purpose</th>
+                                <th>Amount (PHP)</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expenseTableBody">
+                            <!-- Expense log rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
+            <div class="theme-toggle">
+                <label class="switch">
+                    <input type="checkbox" id="themeSwitch">
+                    <span class="slider"></span>
+                </label>
+            </div>                                          
         </div>
     </div>
     <div id="notification" class="notification" role="alert"></div>
     <div id="errorNotification" class="error-notification" role="alert"></div>
     <div id="dateTimeDisplay" class="date-time-display"></div>
+    <div class="icon-container">
+        <i class="fas fa-sun sun-icon"></i>
+        <i class="fas fa-moon moon-icon"></i>
+    </div>
     <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 </body>
 </html>
