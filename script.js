@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    loadData(); // Load saved data when the page loads
     let totalBudget = 0;
     let totalExpenses = 0;
     const expenseLog = [];
@@ -409,6 +408,8 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Total Budget:', totalBudget);
     console.log('Total Expenses:', totalExpenses);
     console.log('Expense Log:', expenseLog);
+
+    loadData()
 });
 
 
