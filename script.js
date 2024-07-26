@@ -28,41 +28,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function saveData() {
         try {
-            localStorage.setItem('totalBudget', totalBudget.toFixed(2));
-            localStorage.setItem('totalExpenses', totalExpenses.toFixed(2));
+            localStorage.setItem('totalBudget', totalBudget);
+            localStorage.setItem('totalExpenses', totalExpenses);
             localStorage.setItem('expenseLog', JSON.stringify(expenseLog));
             localStorage.setItem('undoStack', JSON.stringify(undoStack));
-            console.log('Data saved:', {
-                totalBudget,
-                totalExpenses,
-                expenseLog,
-                undoStack
-            });
         } catch (e) {
             showErrorNotification('Failed to save data.');
         }
-    }    
-    
+    }
+
     function loadData() {
         try {
             const savedBudget = parseFloat(localStorage.getItem('totalBudget'));
             const savedExpenses = parseFloat(localStorage.getItem('totalExpenses'));
             const savedLog = JSON.parse(localStorage.getItem('expenseLog')) || [];
             const savedUndoStack = JSON.parse(localStorage.getItem('undoStack')) || [];
-    
+
             if (!isNaN(savedBudget)) totalBudget = savedBudget;
             if (!isNaN(savedExpenses)) totalExpenses = savedExpenses;
-            expenseLog.length = 0; // Clear the current log
             expenseLog.push(...savedLog);
-            undoStack.length = 0; // Clear the current stack
             undoStack.push(...savedUndoStack);
-    
+
             updateDisplay();
             updateExpenseTable();
         } catch (e) {
             showErrorNotification('Failed to load data.');
         }
     }
+
+    // Call loadData when the page loads
+    loadData();
+    
 
     // Check if dark mode is already applied
     if (localStorage.getItem('darkMode') === 'enabled') {
@@ -104,35 +100,33 @@ document.addEventListener('DOMContentLoaded', () => {
             ["Total Expenses", totalExpenses],
             ["Remaining Budget", totalBudget - totalExpenses]
         ];
-        
+
         const expenses = expenseLog.map(expense => [
             expense.name,
             expense.amount.toFixed(2),
             formatDateTime(expense.date).date,
             formatDateTime(expense.date).time
         ]);
-        
+
         const ws = XLSX.utils.aoa_to_sheet([["Purpose", "Amount (PHP)", "Date", "Time"]].concat(expenses));
         const wsDetails = XLSX.utils.aoa_to_sheet([["Current Budget Details"], ...budgetDetails]);
-    
+
         // Create a workbook and add the sheets
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Expenses");
         XLSX.utils.book_append_sheet(wb, wsDetails, "Budget Details");
-    
+
         // Write the workbook and trigger the download
         XLSX.writeFile(wb, 'BudgetTracker.xlsx');
     });
-    
+
     document.getElementById('importBtn').addEventListener('click', () => {
         importConfirmationModal.style.display = 'flex'; // Show modal
     });
-    
+
     confirmImportButton.addEventListener('click', () => {
         importConfirmationModal.style.display = 'none'; // Hide modal
         document.getElementById('importFile').click(); // Trigger file input
-        // Save the imported data
-        saveData();
     });
 
     document.getElementById('importFile').addEventListener('change', (event) => {
@@ -142,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
-    
+
                 // Handle the Budget Details sheet
                 const budgetSheet = workbook.Sheets[workbook.SheetNames[1]];
                 const budgetData = XLSX.utils.sheet_to_json(budgetSheet, { header: 1 });
@@ -151,19 +145,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     totalExpenses = parseFloat(budgetData[2][1]) || 0;
                     updateDisplay();
                 }
-    
+
                 // Handle the Expenses sheet
                 const expenseSheet = workbook.Sheets[workbook.SheetNames[0]];
                 const expensesData = XLSX.utils.sheet_to_json(expenseSheet, { header: 1 });
                 expenseLog.length = 0; // Clear existing expenses
-                
+
                 expensesData.slice(1).forEach(row => {
                     if (row.length === 4) {
                         const purpose = row[0];
                         const amount = parseFloat(row[1]) || 0;
                         const dateStr = row[2];
                         const timeStr = row[3];
-                        
+
                         // Construct a valid ISO date string
                         let date;
                         try {
@@ -173,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             console.error("Error parsing date:", error);
                             return; // Skip invalid rows
                         }
-    
+
                         expenseLog.push({
                             name: purpose,
                             amount: amount,
@@ -182,6 +176,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
                 updateExpenseTable();
+
+                // Save data after import
+                saveData();
             };
             reader.readAsArrayBuffer(file);
         }
@@ -221,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         return null; // No valid format found
-    }
+    }    
     
 
     function updateDisplay() {
@@ -275,10 +272,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showErrorNotification(message) {
         errorNotification.textContent = message;
-        errorNotification.classList.add('show-error-notification');
+        errorNotification.style.display = 'block';
         setTimeout(() => {
-            errorNotification.classList.remove('show-error-notification');
-        }, 3000); // Error notification visible for 10 seconds
+            errorNotification.style.display = 'none';
+        }, 3000);
     }
 
     function updateDateTime() {
@@ -394,8 +391,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    loadData(); // Load saved data when the page loads
-
     // Handle floating date-time display movement
     let lastScrollTop = 0;
     window.addEventListener('scroll', () => {
@@ -408,10 +403,4 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Total Budget:', totalBudget);
     console.log('Total Expenses:', totalExpenses);
     console.log('Expense Log:', expenseLog);
-
-    loadData()
 });
-
-
-
-
