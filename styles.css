@@ -327,6 +327,8 @@ input[type="datetime-local"]:focus {
     overflow: auto;
     background-color: rgb(0,0,0);
     background-color: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
 }
 
 
@@ -336,6 +338,9 @@ input[type="datetime-local"]:focus {
     padding: 20px;
     border: 1px solid #888;
     width: 500px;
+    height: auto;
+    justify-content: center;
+    align-items: center;
 }
 
 .import-export-buttons {
