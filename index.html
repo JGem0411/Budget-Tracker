@@ -11,10 +11,11 @@
     <meta property="og:image" content="images\thumbnail.png">
     <meta property="og:url" content="https://gembudgettracker.netlify.app/">
     <meta property="og:type" content="website">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    
     <div class="container">
+        <div id="dateTimeDisplay" class="date-time-display"></div>
         <div class="left-section">
             <div class="budget-container">
                 <div class="budget-details">
@@ -26,16 +27,22 @@
              </div>
             <div>
                 <div class="import-export-buttons">
-                    <button id="exportBtn">Export Data to Excel</button>
+                    <button id="exportBtn">Export to Excel</button>
                     <input type="file" id="importFile" style="display: none;">
-                    <button id="importBtn">Import Data from Excel</button>
+                    <button id="importBtn">Import from Excel</button>
                 </div>
                 <div id="importConfirmationModal" class="modal">
                     <div class="modal-content">
                         <p>Only files exported from this website will be accepted.</p>
+                        <div class="button-container">
                         <button id="confirmImport">Confirm</button>
+                        </div>
                     </div>
                 </div>
+            <div class="chart">
+                <h3>Daily Expenditures</h3>
+                <canvas id="dailyExpendituresChart" width="400" height="200"></canvas>
+            </div>                
             </div>
         </div>
 
@@ -45,32 +52,34 @@
             <div class="input-section">
                 <label for="budget">Enter your budget:</label>
                 <input type="number" id="budget" placeholder="Enter Budget" aria-required="true">
-                <button id="setBudgetBtn">Set Budget</button>
+                <div class="button-container"><button id="setBudgetBtn">Set Budget</button></div>
             </div>
 
             <div class="expense-section">
                 <h2>Log an Expense</h2>
-                <label for="expenseName">Purpose:</label>
-                <input type="text" id="expenseName" placeholder="Expense Purpose" aria-required="true">
+                <label for="expenseName" autocomplete="off">Purpose:</label>
+                <input type="text" id="expenseName" placeholder="Expense Purpose" aria-required="true" autocomplete="off">
 
                 <label for="expenseAmount">Amount (PHP):</label>
                 <input type="number" id="expenseAmount" placeholder="Expense Amount" aria-required="true">
 
                 <label for="expenseDate">Date & Time (optional):</label>
                 <input type="datetime-local" id="expenseDate">
-
+                <div class="button-container">
                 <button id="logExpenseBtn">Log Expense</button>
-                <div class="button-group">
-                    <button id="undoBtn">Undo</button>
-                    <button id="redoBtn">Redo</button>
                 </div>
+                <div class="button-container">
                 <button id="resetBtn">Reset</button>
-
+                </div>
             </div>
         </div>
         <div class="right-section">
             <div class="expense-log-grid">
                 <div class="expense-log-container">
+                    <div class="button-group" id="undoredobuttons">
+                        <button id="undoBtn"><i class="fas fa-undo"></i>Undo</button>
+                        <button id="redoBtn">Redo<i class="fas fa-redo"></i></button>
+                    </div>
                     <table class="expense-log-table">
                         <thead>
                             <tr>
@@ -96,12 +105,11 @@
     </div>
     <div id="notification" class="notification" role="alert"></div>
     <div id="errorNotification" class="error-notification" role="alert"></div>
-    <div id="dateTimeDisplay" class="date-time-display"></div>
     <div class="icon-container">
         <i class="fas fa-sun sun-icon"></i>
         <i class="fas fa-moon moon-icon"></i>
     </div>
-    <script src="script.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

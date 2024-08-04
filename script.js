@@ -25,6 +25,66 @@ document.addEventListener('DOMContentLoaded', () => {
     const body = document.body;
     const sunIcon = document.querySelector('.sun-icon');
     const moonIcon = document.querySelector('.moon-icon');
+    const ctx = document.getElementById('dailyExpendituresChart').getContext('2d');
+    const expenseCategoryInput = document.getElementById('expenseCategory');
+    let dailyExpendituresChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [], // Will be filled with dates
+            datasets: [{
+                label: 'Daily Expenditures',
+                data: [], // Will be filled with expenditure amounts
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Amount (PHP)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                }
+            }
+        }
+    });
+
+    function updateDailyExpendituresChart() {
+        const expendituresByDate = {};
+
+        expenseLog.forEach(expense => {
+            const date = formatDateTime(expense.date).date;
+            if (!expendituresByDate[date]) {
+                expendituresByDate[date] = 0;
+            }
+            expendituresByDate[date] += expense.amount;
+        });
+
+        const labels = Object.keys(expendituresByDate);
+        const data = Object.values(expendituresByDate);
+
+        dailyExpendituresChart.data.labels = labels;
+        dailyExpendituresChart.data.datasets[0].data = data;
+        dailyExpendituresChart.update();
+    }
+
+    function formatDateTime(dateTimeString) {
+        const dateObj = new Date(dateTimeString);
+        const optionsDate = { day: '2-digit', month: '2-digit', year: 'numeric' };
+        const optionsTime = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+        const formattedDate = dateObj.toLocaleDateString('en-GB', optionsDate);
+        const formattedTime = dateObj.toLocaleTimeString('en-GB', optionsTime);
+        return { date: formattedDate, time: formattedTime };
+    }
 
     function saveData() {
         try {
@@ -58,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Call loadData when the page loads
     loadData();
+    updateDailyExpendituresChart();
     
 
     // Check if dark mode is already applied
@@ -94,32 +155,78 @@ document.addEventListener('DOMContentLoaded', () => {
     
 
     document.getElementById('exportBtn').addEventListener('click', () => {
+        // Helper function to create a cell style
+        function createCellStyle(isBold = false, alignment = 'center') {
+            return {
+                font: { bold: isBold },
+                alignment: { horizontal: alignment, vertical: alignment },
+                border: {
+                    top: { style: 'thin' },
+                    right: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    left: { style: 'thin' }
+                }
+            };
+        }
+    
         // Prepare data for export
         const budgetDetails = [
-            ["Total Budget", totalBudget],
-            ["Total Expenses", totalExpenses],
-            ["Remaining Budget", totalBudget - totalExpenses]
+            ["Total Budget:", totalBudget],
+            ["Total Expenses:", totalExpenses],
+            ["Remaining Budget:", totalBudget - totalExpenses]
         ];
-
+    
         const expenses = expenseLog.map(expense => [
             expense.name,
             expense.amount.toFixed(2),
             formatDateTime(expense.date).date,
             formatDateTime(expense.date).time
         ]);
-
+    
+        // Create worksheets
         const ws = XLSX.utils.aoa_to_sheet([["Purpose", "Amount (PHP)", "Date", "Time"]].concat(expenses));
         const wsDetails = XLSX.utils.aoa_to_sheet([["Current Budget Details"], ...budgetDetails]);
-
+    
+        // Apply styles to header row
+        const headerStyle = createCellStyle(true, 'center');
+        const columns = ['A', 'B', 'C', 'D'];
+        
+        columns.forEach(col => {
+            if (ws[col + '1']) {
+                ws[col + '1'].s = headerStyle;
+            }
+            if (wsDetails[col + '1']) {
+                wsDetails[col + '1'].s = headerStyle;
+            }
+        });
+    
+        // Apply styles to the first row of budget details
+        if (wsDetails['A1']) wsDetails['A1'].s = createCellStyle(true, 'center');
+        if (wsDetails['B1']) wsDetails['B1'].s = createCellStyle(true, 'center');
+    
+        // Set column widths for the expenses sheet
+        ws['!cols'] = [
+            { width: 16 }, // Column A width
+            { width: 15 }, // Column B width
+            { width: 12 }, // Column C width
+            { width: 11 }  // Column D width
+        ];
+    
+        // Set column widths for the budget details sheet
+        wsDetails['!cols'] = [
+            { width: 20 }, // Column A width
+            { width: 15 }  // Column B width
+        ];
+    
         // Create a workbook and add the sheets
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Expenses");
         XLSX.utils.book_append_sheet(wb, wsDetails, "Budget Details");
-
+    
         // Write the workbook and trigger the download
         XLSX.writeFile(wb, 'BudgetTracker.xlsx');
     });
-
+    
     document.getElementById('importBtn').addEventListener('click', () => {
         importConfirmationModal.style.display = 'flex'; // Show modal
     });
@@ -176,6 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
                 updateExpenseTable();
+                updateDailyExpendituresChart();
 
                 // Save data after import
                 saveData();
@@ -183,16 +291,6 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.readAsArrayBuffer(file);
         }
     });
-    
-    function parseDateTime(dateStr, timeStr) {
-        // Custom date parsing logic, ensure to handle different formats
-        let date = new Date(`${dateStr} ${timeStr}`);
-        if (isNaN(date.getTime())) {
-            console.error("Invalid date:", dateStr, timeStr);
-            return null;
-        }
-        return date;
-    }
 
     function parseDateTime(dateStr, timeStr) {
         const formats = [
@@ -267,14 +365,14 @@ document.addEventListener('DOMContentLoaded', () => {
         notification.classList.add('show-notification');
         setTimeout(() => {
             notification.classList.remove('show-notification');
-        }, 3000); // Notification visible for 10 seconds
+        }, 3000);
     }
 
     function showErrorNotification(message) {
         errorNotification.textContent = message;
-        errorNotification.style.display = 'block';
+        errorNotification.classList.add('show-error-notification');
         setTimeout(() => {
-            errorNotification.style.display = 'none';
+            errorNotification.style.remove = ('show-error-notification');
         }, 3000);
     }
 
@@ -303,6 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const expenseName = expenseNameInput.value.trim();
         const expenseAmount = parseFloat(expenseAmountInput.value) || 0;
         let expenseDate = expenseDateInput.value;
+        const expenseCategory = expenseCategoryInput.value.trim();
 
         if (totalBudget <= 0) {
             showErrorNotification('Please set a budget before logging expenses.');
@@ -332,13 +431,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const newExpense = { name: expenseName, amount: expenseAmount, date: expenseDate };
+        const newExpense = { name: expenseName, amount: expenseAmount, date: expenseDate, category: expenseCategory };
         expenseLog.push(newExpense);
         totalExpenses += expenseAmount;
         undoStack.length = 0; // Clear redo stack
         expenseNameInput.value = '';
         expenseAmountInput.value = '';
         expenseDateInput.value = '';
+        updateDailyExpendituresChart();
         updateDisplay();
         updateExpenseTable();
         showNotification('Expense logged successfully!');
@@ -357,6 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             showErrorNotification('No expense to undo.');
         }
+        updateDailyExpendituresChart();
     });
 
     redoBtn.addEventListener('click', () => {
@@ -371,6 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             showErrorNotification('No expense to redo.');
         }
+        updateDailyExpendituresChart();
     });
 
     function resetData() {
@@ -388,6 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
     resetBtn.addEventListener('click', () => {
         if (confirm("Are you sure you want to reset? This action cannot be undone.")) {
             resetData();
+            updateDailyExpendituresChart();
         }
     });
 
@@ -399,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dateTimeDisplay.style.transform = `translateY(${Math.min(Math.max(delta, -250), 250)}px)`;
         lastScrollTop = scrollTop;
     });
-    
+
     console.log('Total Budget:', totalBudget);
     console.log('Total Expenses:', totalExpenses);
     console.log('Expense Log:', expenseLog);
