@@ -42,6 +42,8 @@
             <div class="chart">
                 <h3>Daily Expenditures</h3>
                 <canvas id="dailyExpendituresChart" width="400" height="200"></canvas>
+                <h3>Category Expenditures</h3>
+                <canvas id="categoryExpendituresChart"></canvas>
             </div>                
             </div>
         </div>
@@ -57,9 +59,14 @@
 
             <div class="expense-section">
                 <h2>Log an Expense</h2>
-                <label for="expenseName" autocomplete="off">Purpose:</label>
-                <input type="text" id="expenseName" placeholder="Expense Purpose" aria-required="true" autocomplete="off">
-
+                <label for="expenseCategory" autocomplete="off">Category:</label>
+                <select id="expenseCategory">
+                    <option value="" disabled selected>Select a category</option>
+                    <option value="food">Food</option>
+                    <option value="bills">Bills</option>
+                    <option value="essentials">Essentials</option>
+                    <option value="leisure">Leisure</option>
+                </select>                
                 <label for="expenseAmount">Amount (PHP):</label>
                 <input type="number" id="expenseAmount" placeholder="Expense Amount" aria-required="true">
 
@@ -85,7 +92,7 @@
                             <tr>
                                 <th>Purpose</th>
                                 <th>Amount (PHP)</th>
-                                <th>Date</th>
+                                <th>Date dd/mm/yyyy</th>
                                 <th>Time</th>
                             </tr>
                         </thead>

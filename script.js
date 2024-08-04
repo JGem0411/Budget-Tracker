@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const undoStack = []; // Stack to hold undone expenses
     const budgetInput = document.getElementById('budget');
     const setBudgetBtn = document.getElementById('setBudgetBtn');
-    const expenseNameInput = document.getElementById('expenseName');
     const expenseAmountInput = document.getElementById('expenseAmount');
     const expenseDateInput = document.getElementById('expenseDate');
     const logExpenseBtn = document.getElementById('logExpenseBtn');
@@ -26,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const sunIcon = document.querySelector('.sun-icon');
     const moonIcon = document.querySelector('.moon-icon');
     const ctx = document.getElementById('dailyExpendituresChart').getContext('2d');
-    const expenseCategoryInput = document.getElementById('expenseCategory');
     let dailyExpendituresChart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -57,6 +55,58 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+    const ctxCategory = document.getElementById('categoryExpendituresChart').getContext('2d');
+    
+    let categoryExpendituresChart = new Chart(ctxCategory, {
+        type: 'bar',
+        data: {
+            labels: [], // Will be filled with categories
+            datasets: [{
+                label: 'Category Expenditures',
+                data: [], // Will be filled with expenditure amounts for each category
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Amount (PHP)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Category'
+                    }
+                }
+            }
+        }
+    });
+    
+
+    function updateCategoryExpendituresChart() {
+        const expendituresByCategory = {};
+
+        expenseLog.forEach(expense => {
+            const category = expense.category || 'Uncategorized'; // Default category if not specified
+            if (!expendituresByCategory[category]) {
+                expendituresByCategory[category] = 0;
+            }
+            expendituresByCategory[category] += expense.amount;
+        });
+
+        const labels = Object.keys(expendituresByCategory);
+        const data = Object.values(expendituresByCategory);
+
+        categoryExpendituresChart.data.labels = labels;
+        categoryExpendituresChart.data.datasets[0].data = data;
+        categoryExpendituresChart.update();
+    }
 
     function updateDailyExpendituresChart() {
         const expendituresByDate = {};
@@ -119,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Call loadData when the page loads
     loadData();
     updateDailyExpendituresChart();
-    
+    updateCategoryExpendituresChart();
 
     // Check if dark mode is already applied
     if (localStorage.getItem('darkMode') === 'enabled') {
@@ -177,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ];
     
         const expenses = expenseLog.map(expense => [
-            expense.name,
+            expense.name.charAt(0).toUpperCase() + expense.name.slice(1), // Capitalize first letter
             expense.amount.toFixed(2),
             formatDateTime(expense.date).date,
             formatDateTime(expense.date).time
@@ -225,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
         // Write the workbook and trigger the download
         XLSX.writeFile(wb, 'BudgetTracker.xlsx');
-    });
+    });    
     
     document.getElementById('importBtn').addEventListener('click', () => {
         importConfirmationModal.style.display = 'flex'; // Show modal
@@ -243,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
-
+    
                 // Handle the Budget Details sheet
                 const budgetSheet = workbook.Sheets[workbook.SheetNames[1]];
                 const budgetData = XLSX.utils.sheet_to_json(budgetSheet, { header: 1 });
@@ -252,19 +302,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     totalExpenses = parseFloat(budgetData[2][1]) || 0;
                     updateDisplay();
                 }
-
+    
                 // Handle the Expenses sheet
                 const expenseSheet = workbook.Sheets[workbook.SheetNames[0]];
                 const expensesData = XLSX.utils.sheet_to_json(expenseSheet, { header: 1 });
                 expenseLog.length = 0; // Clear existing expenses
-
+    
                 expensesData.slice(1).forEach(row => {
                     if (row.length === 4) {
                         const purpose = row[0];
                         const amount = parseFloat(row[1]) || 0;
                         const dateStr = row[2];
                         const timeStr = row[3];
-
+    
                         // Construct a valid ISO date string
                         let date;
                         try {
@@ -274,36 +324,40 @@ document.addEventListener('DOMContentLoaded', () => {
                             console.error("Error parsing date:", error);
                             return; // Skip invalid rows
                         }
-
+    
+                        // Check if category is present and trim any extra spaces
+                        const category = purpose.trim() || 'Uncategorized'; 
+                        
                         expenseLog.push({
                             name: purpose,
                             amount: amount,
-                            date: date.toISOString()
+                            date: date.toISOString(),
+                            category: capitalizeFirstLetter(category) // Ensure category is capitalized
                         });
                     }
                 });
                 updateExpenseTable();
                 updateDailyExpendituresChart();
-
+                updateCategoryExpendituresChart();
                 // Save data after import
                 saveData();
             };
             reader.readAsArrayBuffer(file);
         }
     });
-
+    
     function parseDateTime(dateStr, timeStr) {
         const formats = [
-            { format: 'YYYY-MM-DDTHH:mm:ssZ', parse: d => new Date(d) },
-            { format: 'YYYY-MM-DD HH:mm:ss', parse: d => new Date(d.replace(' ', 'T') + 'Z') },
-            { format: 'MM/DD/YYYY HH:mm:ss', parse: d => {
+            { format: 'DD/MM/YYYY HH:mm:ss', parse: d => {
                 const [datePart, timePart] = d.split(' ');
-                const [month, day, year] = datePart.split('/');
+                const [day, month, year] = datePart.split('/');
                 const [hour, minute, second] = timePart.split(':');
                 return new Date(year, month - 1, day, hour, minute, second);
-            }}
+            }},
+            { format: 'YYYY-MM-DDTHH:mm:ssZ', parse: d => new Date(d) },
+            { format: 'YYYY-MM-DD HH:mm:ss', parse: d => new Date(d.replace(' ', 'T') + 'Z') }
         ];
-        
+    
         const dateTimeStr = `${dateStr} ${timeStr}`;
         for (const { parse } of formats) {
             try {
@@ -316,8 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         return null; // No valid format found
-    }    
-    
+    }         
 
     function updateDisplay() {
         totalBudgetDisplay.textContent = totalBudget.toFixed(2);
@@ -329,33 +382,33 @@ document.addEventListener('DOMContentLoaded', () => {
         const dateObj = new Date(dateTimeString);
         const optionsDate = { day: '2-digit', month: '2-digit', year: 'numeric' };
         const optionsTime = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
-        const formattedDate = dateObj.toLocaleDateString('en-GB', optionsDate);
+        const formattedDate = dateObj.toLocaleDateString('en-GB', optionsDate); // 'en-GB' formats as dd/mm/yyyy
         const formattedTime = dateObj.toLocaleTimeString('en-GB', optionsTime);
         return { date: formattedDate, time: formattedTime };
-    }
+    }      
 
     function updateExpenseTable() {
         expenseTableBody.innerHTML = '';
         expenseLog.forEach(expense => {
             const row = document.createElement('tr');
-
+    
             const purposeCell = document.createElement('td');
-            purposeCell.textContent = expense.name;
+            purposeCell.textContent = expense.name.charAt(0).toUpperCase() + expense.name.slice(1); // Capitalize first letter
             row.appendChild(purposeCell);
-
+    
             const amountCell = document.createElement('td');
             amountCell.textContent = expense.amount.toFixed(2);
             row.appendChild(amountCell);
-
+    
             const { date, time } = formatDateTime(expense.date);
             const dateCell = document.createElement('td');
             dateCell.textContent = date;
             row.appendChild(dateCell);
-
+    
             const timeCell = document.createElement('td');
             timeCell.textContent = time;
             row.appendChild(timeCell);
-
+    
             expenseTableBody.appendChild(row);
         });
     }
@@ -397,19 +450,23 @@ document.addEventListener('DOMContentLoaded', () => {
         saveData(); // Save data to localStorage
     });
 
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }    
+
     logExpenseBtn.addEventListener('click', () => {
-        const expenseName = expenseNameInput.value.trim();
+        const expenseNameId = document.getElementById('expenseCategory').value; // Select element for expense category
         const expenseAmount = parseFloat(expenseAmountInput.value) || 0;
-        let expenseDate = expenseDateInput.value;
-        const expenseCategory = expenseCategoryInput.value.trim();
+        const expenseCategory = expenseNameId.charAt(0).toUpperCase() + expenseNameId.slice(1); // Capitalize first letter
+         let expenseDate = expenseDateInput.value;
 
         if (totalBudget <= 0) {
             showErrorNotification('Please set a budget before logging expenses.');
             return;
         }
 
-        if (!expenseName) {
-            showErrorNotification('Please enter a purpose for the expense.');
+        if (!expenseNameId) {
+            showErrorNotification('Please select an expense purpose.');
             return;
         }
 
@@ -431,14 +488,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const newExpense = { name: expenseName, amount: expenseAmount, date: expenseDate, category: expenseCategory };
+        const newExpense = { name: expenseNameId, amount: expenseAmount, date: expenseDate, category: expenseCategory };
         expenseLog.push(newExpense);
         totalExpenses += expenseAmount;
         undoStack.length = 0; // Clear redo stack
-        expenseNameInput.value = '';
         expenseAmountInput.value = '';
         expenseDateInput.value = '';
         updateDailyExpendituresChart();
+        updateCategoryExpendituresChart(); // Update category chart
         updateDisplay();
         updateExpenseTable();
         showNotification('Expense logged successfully!');
@@ -458,6 +515,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showErrorNotification('No expense to undo.');
         }
         updateDailyExpendituresChart();
+        updateCategoryExpendituresChart();
     });
 
     redoBtn.addEventListener('click', () => {
@@ -473,6 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showErrorNotification('No expense to redo.');
         }
         updateDailyExpendituresChart();
+        updateCategoryExpendituresChart();
     });
 
     function resetData() {
@@ -491,6 +550,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirm("Are you sure you want to reset? This action cannot be undone.")) {
             resetData();
             updateDailyExpendituresChart();
+            updateCategoryExpendituresChart();
         }
     });
 

@@ -51,6 +51,32 @@ h1, h2, p {
     padding: 2px 10px 10px 10px;
 }
 
+/* Basic styling for select element */
+select {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    box-sizing: border-box;
+    border: 1px solid #ccc; /* Optional: Adjust border color */
+    border-radius: 4px; /* Optional: Adjust border radius */
+    font-size: 15px; /* Optional: Adjust font size */
+    background-color: #fff; /* Optional: Adjust background color */
+}
+
+/* Add styles for focus state if needed */
+select:focus {
+    border-color: #007bff; /* Adjust the border color on focus */
+    outline: none; /* Remove default focus outline */
+}
+
+/* Optional: Adjust font size and padding for better alignment */
+select option {
+    font-size: 16px; /* Adjust font size of options */
+    padding: 100px; /* Adjust padding of options */
+    border-radius: 0;
+}
+
+
 .button-container {
     display: flex;
     justify-content: center;
@@ -141,7 +167,7 @@ button:hover {
 .show-notification, .show-error-notification {
     display: block;
     animation: bounce 0.6s ease;
-    z-index: 1000;
+    z-index: 1;
 }
 
 .chart {
@@ -157,6 +183,10 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+}
+
+.purpose {
+    text-transform: capitalize;
 }
 
 th, td {
@@ -349,6 +379,31 @@ input[type="datetime-local"]:focus {
     background-color: #121212;
     color: #e0e0e0;
     transition: background-color 0.3s, color 0.3s; /* Smooth transition for background and text color */
+}
+
+.dark-mode select {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    box-sizing: border-box;
+    border: 1px solid #555; /* Optional: Adjust border color */
+    border-radius: 4px; /* Optional: Adjust border radius */
+    font-size: 15px; /* Optional: Adjust font size */
+    background-color: #333; /* Optional: Adjust background color */
+    color: #e0e0e0;
+}
+
+/* Add styles for focus state if needed */
+.dark-mode select:focus {
+    border-color: #007bff; /* Adjust the border color on focus */
+    outline: none; /* Remove default focus outline */
+}
+
+/* Optional: Adjust font size and padding for better alignment */
+.dark-mode select option {
+    font-size: 16px; /* Adjust font size of options */
+    padding: 100px; /* Adjust padding of options */
+    border-radius: 0;
 }
 
 .dark-mode .container {
